@@ -27,4 +27,22 @@ MongoClient.connect("mongodb://localhost:27017/todoApp",function(err,client){
 		location:"india"
 	});
 
+	db.collection("Users").insertMany([{
+		name:"yashraj",
+		age:19,
+		location:"india"
+	},
+
+	{
+		name:"krutik",
+		age:18,
+		location:"india"
+	},
+	{
+		name:"mike",
+		age:19,
+		location:"london"
+	}
+	]);
+
 })
