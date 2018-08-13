@@ -4,10 +4,19 @@ const expect = require("expect");
 const {app} = require("./../server");
 const {Todo} = require("./../models/todo");
 
+const seedData = [{
+	text:"learn AI"
+},
+];
+
 beforeEach((done) => {
 
 	Todo.remove({}).then(() => {
-		done();
+		
+		return Todo.insertMany(seedData)
+
+	}).then(() => {
+			done();
 	})
 
 })
@@ -31,9 +40,8 @@ describe("POST /todos",() => {
 			}
 
 		Todo.find().then((result) => {
-			
-			expect(result.length).toBe(1);
-			expect(result[0].text).toBe(obj.text);
+			expect(result.length).toBe(2);
+			expect(result[1].text).toBe(obj.text);
 			done();
 
 		}).catch((err) => done(err));
@@ -62,7 +70,7 @@ describe("POST /todos",() => {
 
 		Todo.find().then((result) => {
 			
-			expect(result.length).toBe(0);
+			expect(result.length).toBe(1);
 			done();
 
 		}).catch((err) => done(err));
@@ -78,4 +86,31 @@ describe("POST /todos",() => {
 
 
 
+});
+
+describe("GET /todos",() => {
+
+
+	it('should get all todos',(done) => {
+
+		request(app).get("/todos")
+		.expect(200)
+		.end((err,res) => {
+
+			if(err){
+				return done(err)
+			}
+
+			Todo.find().then((doc) => {
+
+				expect(doc.length).toBe(1);
+				done();
+
+			}).catch((err) => done(err));
+
+
+		})
+
+
+	});
 });
