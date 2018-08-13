@@ -6,6 +6,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 
+const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.post("/todos",(req,res) => {
@@ -32,29 +33,27 @@ app.get("/todos/:id",(req,res) => {
 
 	var id = req.params.id;
 	if(!ObjectID.isValid(id)){
-
-		res.status(400).send("err");
+		return res.status(400).send();
 	}
 
-
-
-	User.findById(id).then((result) => {
+	Todo.findById(id).then((result) => {
 		if(!result){
-			res.status(400).send("error");
-		}else {
-			res.status(200).send(result);
+			return res.status(400).send();
 		}
+			res.status(200).send(result);
+		
 	}).catch((err) => res.status(400).send(err));
 
 });
 
 
-app.listen(3000,() => {
-	console.log("server started in 3000");
+app.listen(port,() => {
+	console.log(`server started in ${port}`);
 });
 
 module.exports = {
 	app,
 	User,
-	Todo
+	Todo,
+	ObjectID
 }

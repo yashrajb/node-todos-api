@@ -1,10 +1,10 @@
 const request = require("supertest");
 const expect = require("expect");
-
-const {app} = require("./../server");
+const {app,ObjectID} = require("./../server");
 const {Todo} = require("./../models/todo");
 
 const seedData = [{
+	_id:new ObjectID(),
 	text:"learn AI"
 },
 ];
@@ -113,4 +113,49 @@ describe("GET /todos",() => {
 
 
 	});
+});
+
+describe('GET /todos/:id',() => {
+
+
+	it('should get result on valid id',(done) => {
+
+
+		request(app)
+		.get(`/todos/${seedData[0]._id}`)
+		.expect(200)
+		.expect((result) => {
+			expect(result.body.text).toBe(seedData[0].text);
+		}).end(done);
+
+
+	});
+
+	it('should not get result on invalid id',(done) => {
+
+
+		request(app)
+		.get(`/todos/${seedData[0]._id}+'123'`)
+		.expect(400)
+		.expect((result) => {
+			expect(result.body).toEqual({})
+		}).end(done);
+
+
+	});
+
+	it('should not get result on invalid id',(done) => {
+
+
+		request(app)
+		.get(`/todos/123`)
+		.expect(400)
+		.expect((result) => {
+			expect(result.body).toEqual({})
+		}).end(done);
+
+
+	});
+
+
 });
