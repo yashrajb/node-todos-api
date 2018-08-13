@@ -1,7 +1,7 @@
 const {mongoose} = require("./db/mongoose-connect");
-const {Users} = require("./models/user");
+const {User} = require("./models/user");
 const {Todo} = require("./models/todo");
-
+const {ObjectID} = require("mongodb");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
@@ -26,9 +26,27 @@ app.get("/todos",(req,res) => {
 		res.status(200).send({result});
 
 	}).catch((err) => res.status(400).send(err));
+});
+
+app.get("/todos/:id",(req,res) => {
+
+	var id = req.params.id;
+	if(!ObjectID.isValid(id)){
+
+		res.status(400).send("err");
+	}
 
 
-})
+
+	User.findById(id).then((result) => {
+		if(!result){
+			res.status(400).send("error");
+		}else {
+			res.status(200).send(result);
+		}
+	}).catch((err) => res.status(400).send(err));
+
+});
 
 
 app.listen(3000,() => {
@@ -37,6 +55,6 @@ app.listen(3000,() => {
 
 module.exports = {
 	app,
-	Users,
+	User,
 	Todo
 }
