@@ -12,19 +12,31 @@ app.post("/todos",(req,res) => {
 
 	var todo = new Todo(req.body);
 
-	todo.save().then((err,result) => {
-		if(err){
-
-			res.send(err);
-
-		}else {
-			res.send(result);
-		}
-	}).catch((err) => res.send(err));
+	todo.save().then((result) => {
+		res.status(200).send(result);
+	}).catch((err) => res.status(400).send(err));
 
 });
+
+app.get("/todos",(req,res) => {
+
+
+	Todo.find().then((result) => {
+
+		res.status(200).send({result});
+
+	}).catch((err) => res.status(400).send(err));
+
+
+})
 
 
 app.listen(3000,() => {
 	console.log("server started in 3000");
-}) 
+});
+
+module.exports = {
+	app,
+	Users,
+	Todo
+}
