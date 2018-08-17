@@ -6,7 +6,7 @@ const {Todo} = require("./../models/todo");
 const seedData = [{
 	_id:new ObjectID(),
 	text:"learn AI"
-},
+}
 ];
 
 beforeEach((done) => {
@@ -159,3 +159,162 @@ describe('GET /todos/:id',() => {
 
 
 });
+
+
+
+
+describe('DELETE /todo/:id',() => {
+
+	it("should be deleted and get result",(done) => {
+
+		var id = seedData[0]._id.toString();
+
+		request(app)
+		.delete(`/todo/${id}`)
+		.expect((result) => {
+			expect(result.body._id.toString()).toBe(id);
+
+		})
+		.end((err,result) => {
+
+
+			if(err) {
+				return done(err); 
+			}
+
+			Todo.findById(id).then((doc) => {
+
+				expect(doc).toBeFalsy();
+				done();
+
+			}).catch((err) => done(err));
+
+		})
+
+
+
+	});
+
+
+
+
+	it("should be not be deleted and on invalid get result",(done) => {
+
+		var id = new ObjectID().toString();
+
+
+		request(app)
+		.delete(`/todo/${id}`)
+		.expect((result) => {
+			
+			expect(result.body).toEqual({});
+
+		})
+		.end((err,result) => {
+
+
+			if(err) {
+				return done(err); 
+			}
+
+			Todo.findById(id).then((doc) => {
+
+				expect(doc).toBeFalsy();
+				done();
+
+			}).catch((err) => done(err));
+
+		})
+
+
+
+	});
+
+
+
+it("should be not be deleted and on invalid get result",(done) => {
+
+		var id = "12345";
+
+		request(app)
+		.delete(`/todo/${id}`)
+		.expect((result) => {
+			
+			expect(result.body).toEqual({});
+
+		})
+		.end(done)
+
+
+
+	});
+
+
+
+});
+
+
+describe('UPDATE /todo/:id',() => {
+
+
+	it('should update the object',(done) => {
+
+
+		var id = seedData[0]._id.toString();
+
+		request(app)
+		.patch(`/todo/${id}`)
+		.send({
+			completed:true
+		})
+		.expect(200)
+		.expect((result) => {
+			expect(result.body.result.completedAt).toBeTruthy();
+		})
+		.end(done);
+
+
+
+
+
+
+
+	})
+
+
+
+
+
+
+
+
+
+
+
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
