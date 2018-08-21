@@ -14,7 +14,7 @@ const users = [
 	tokens:[
 		{
 			access:"auth",
-			token:jwt.sign({_id:userOne,access:"auth"},"123abc")
+			token:jwt.sign({_id:userOne,access:"auth"},process.env.JWT)
 		}
 	]
 },
