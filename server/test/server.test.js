@@ -2,24 +2,11 @@ const request = require("supertest");
 const expect = require("expect");
 const {app,ObjectID} = require("./../server");
 const {Todo} = require("./../models/todo");
+const {User} = require("./../models/user");
+const {seedData,users,populateUsers,populateTodos} = require("./seed/seedData");
 
-const seedData = [{
-	_id:new ObjectID(),
-	text:"learn AI"
-}
-];
-
-beforeEach((done) => {
-
-	Todo.remove({}).then(() => {
-		
-		return Todo.insertMany(seedData)
-
-	}).then(() => {
-			done();
-	})
-
-})
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe("POST /todos",() => {
 
@@ -27,6 +14,7 @@ describe("POST /todos",() => {
 
 		var obj = {text:'Learn machine learning'};
 		request(app).post("/todos")
+		.set("x-auth",users[0].tokens[0].token)
 		.send(obj)
 		.expect((res) => {
 
@@ -93,7 +81,9 @@ describe("GET /todos",() => {
 
 	it('should get all todos',(done) => {
 
-		request(app).get("/todos")
+		request(app)
+		.get("/todos")
+		.set("x-auth",users[0].tokens[0].token)
 		.expect(200)
 		.end((err,res) => {
 
@@ -123,9 +113,10 @@ describe('GET /todos/:id',() => {
 
 		request(app)
 		.get(`/todos/${seedData[0]._id}`)
+		.set("x-auth",users[0].tokens[0].token)
 		.expect(200)
 		.expect((result) => {
-			expect(result.body.text).toBe(seedData[0].text);
+			expect(result.body).toBeTruthy();
 		}).end(done);
 
 
@@ -167,12 +158,13 @@ describe('DELETE /todo/:id',() => {
 
 	it("should be deleted and get result",(done) => {
 
-		var id = seedData[0]._id.toString();
+		var id = seedData[0]._id;
 
 		request(app)
 		.delete(`/todo/${id}`)
+		.set("x-auth",users[0].tokens[0].token)
 		.expect((result) => {
-			expect(result.body._id.toString()).toBe(id);
+			expect(result.body._id.toString()).toBe(id.toString());
 
 		})
 		.end((err,result) => {
@@ -264,6 +256,7 @@ describe('UPDATE /todo/:id',() => {
 
 		request(app)
 		.patch(`/todo/${id}`)
+		.set("x-auth",users[0].tokens[0].token)
 		.send({
 			completed:true
 		})
@@ -272,37 +265,173 @@ describe('UPDATE /todo/:id',() => {
 			expect(result.body.result.completedAt).toBeTruthy();
 		})
 		.end(done);
+	});
+
+});
+
+describe("GET /users/auth",() => {
+	it('should return 200 with email and id',(done) => {
+
+		request(app)
+		.get("/users/auth")
+		.set("x-auth",users[0].tokens[0].token)
+		.expect(200)
+		.expect((result)=>{
+			expect(result.body._id).toBe(users[0]._id.toString());
+			expect(result.body.email).toBe(users[0].email);
+		})
+		.end(done);
+	});
+
+	it('should not return 200 with email and id',(done) => {
+
+		request(app)
+		.get("/users/auth")
+		.expect(400)
+		.expect((result)=>{
+			expect(result.body).toEqual({});
+		})
+		.end(done);
+	});
+});
+
+describe("GET /users/auth",() => {
+	it('should return 200 with email and id',(done) => {
+
+		request(app)
+		.get("/users/auth")
+		.set("x-auth",users[0].tokens[0].token)
+		.expect(200)
+		.expect((result)=>{
+			expect(result.body._id).toBe(users[0]._id.toString());
+			expect(result.body.email).toBe(users[0].email);
+		})
+		.end(done);
+	});
+
+	it('should not return 200 with email and id',(done) => {
+
+		request(app)
+		.get("/users/auth")
+		.expect(400)
+		.expect((result)=>{
+			expect(result.body).toEqual({});
+		})
+		.end(done);
+	});
+});
+
+
+
+describe("POST /users",() => {
+	it('should return 200 with email and id',(done) => {
+
+
+		const data = {
+			email:"basanyash777@gmail.com",
+			password:"123456789"
+		}
+
+		request(app)
+		.post("/users")
+		.send(data)
+		.expect(200)
+		.expect((result)=>{
+			expect(result.body._id).toBeTruthy();
+			expect(result.body.email).toBe(data.email);
+		})
+		.end((err,result) => {
+			if(err){
+				return done(err);
+			}
+
+			User.findOne({email:data.email}).then((result) => {
+
+				expect(result._id).toBeTruthy();
+				expect(result.password).not.toBe(data.password);
+				done();
+
+			}).catch((err) => done(err));
+
+		});
+	});
+
+	it('should not return 200 with email and id',(done) => {
+
+		request(app)
+		.post("/users")
+		.send({})
+		.expect(400)
+		.end(done);
+	});
+});
+
+
+
+describe("POST /users/login",() => {
+
+	it('should return 200 with id and email',(done) => {
+		request(app)
+		.post("/users/login")
+		.send({
+			email:users[1].email,
+			password:users[1].password
+		})
+		.expect(200)
+		.expect((result) => {
+
+			expect(result.body._id).toBe(users[1]._id.toString());
+			expect(result.body.email).toBe(users[1].email);
+
+
+		})
+		.end(done);
+	});
+
+	it('should not return 200 with id and email',(done) => {
+		request(app)
+		.post("/users/login")
+		.send({
+			email:"basanyashjrutik@gmail.com",
+			password:"123456789"
+		})
+		.expect(400)
+		.end(done);
+	});
+});
+
+describe("DELETE /me/logout",() => {
 
 
 
 
 
 
-
-	})
-
+it("should return 200 with valid token",(done) => {
 
 
+	request(app)
+	.delete("/me/logout")
+	.set("x-auth",users[0].tokens[0].token)
+	.expect(200)
+	.end((err,res) => {
+		if(err){
+			return done(err);
+		}
 
+		User.findOne({_id:users[0]._id}).then((result) => {
 
+			expect(result.tokens.length).toBeFalsy();
+			done();
 
-
-
-
-
-
+		}).catch((err) => done(err));
+	});
 
 });
 
 
 
-
-
-
-
-
-
-
+});
 
 
 
